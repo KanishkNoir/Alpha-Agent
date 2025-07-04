@@ -1,0 +1,18 @@
+services: #docker compose services
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8000 #host:container 
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 
+    volumes: 
+      - ./backend/src:/app 
+    develop:
+      watch: 
+        - action: rebuild 
+          path: backend/requirements.txt 
+        - action: rebuild
+          path: backend/Dockerfile
+        - action: restart  
+          path: backend/src/ 
