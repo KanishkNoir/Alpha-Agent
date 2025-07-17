@@ -6,8 +6,13 @@ services: #docker compose services
     ports:
       - 8080:8000 #host:container 
     command: uvicorn main:app --host 0.0.0.0 --port 8000 
+    env_file:
+      - .env
     volumes: 
       - ./backend/src:/app 
+    depends_on:
+      db_service:
+        condition: service_healthy
     develop:
       watch: 
         - action: rebuild 
@@ -16,3 +21,30 @@ services: #docker compose services
           path: backend/Dockerfile
         - action: restart  
           path: backend/src/ 
+
+# DATABASE_URL = postgresql+psycopg://username:password@db_service:5432/dbname
+  db_service:
+    image: postgres:17.5
+    ports:
+      - 5431:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    volumes:
+      - dc_managed_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  dc_managed_db_data: 
+
+
+
+
+
+
+

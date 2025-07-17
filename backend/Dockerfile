@@ -2,6 +2,8 @@
 #FROM <image_name>:<tag>
 FROM python:3.13.5-slim-bullseye
 
+RUN apt-get update && apt-get install -y curl
+
 # Create python virtual environment
 RUN python -m venv /opt/venv
 ENV PATH=/opt/venv/bin:$PATH  
