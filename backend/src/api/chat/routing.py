@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlmodel import Session, select
 from .models import ChatMessagePayload, ChatMessage 
-from api.db import get_session
+from src.api.db import get_session
 
 router = APIRouter()
 
