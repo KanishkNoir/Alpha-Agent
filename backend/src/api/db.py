@@ -4,8 +4,11 @@ from sqlmodel import Session, SQLModel
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-if DATABASE_URL == "":
-    raise NotImplementedError("DATABASE_URL is not set")
+if not DATABASE_URL:
+    raise RuntimeError(
+        "DATABASE_URL environment variable is not set. "
+        "Please add a PostgreSQL database service in Railway and set the DATABASE_URL."
+    )
 
 engine = sqlmodel.create_engine(DATABASE_URL)
 
