@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from .models import ChatMessagePayload, ChatMessage 
 from api.db import get_session
@@ -59,6 +59,6 @@ def chat_create_supervisor_message(
     response = supe.invoke(msg_data)
     if not response:
         raise HTTPException(status_code=500, detail="No response from supervisor")
-    if not messages:
-        raise HTTPException(status_code=500, detail="No response from supervisor")
-    return messages[-1]
+    if not response.get('messages'):
+        raise HTTPException(status_code=500, detail="No messages in supervisor response")
+    return response['messages'][-1]
