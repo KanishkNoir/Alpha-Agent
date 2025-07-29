@@ -1,7 +1,11 @@
 from fastapi import APIRouter, Depends
 from sqlmodel import Session, select
 from .models import ChatMessagePayload, ChatMessage 
-from src.api.db import get_session
+from api.db import get_session
+from api.ai.services import generate_email_message
+from api.ai.schemas import EmailMessageSchema, SupervisorMessageSchema
+from api.ai.agents import get_supervisor
+
 
 router = APIRouter()
 
@@ -20,8 +24,8 @@ def chat_list_messages(session: Session = Depends(get_session)):
 
 
 #HTTP POST -> paylaod = ("message": "hello world")
-# curl -X POST -d '{"message": "hello world"}'-H "Content-Type: application/json" http://localhost:8080/api/chat/
-@router.post("/", response_model=ChatMessage)
+# curl -X POST -d '{"message": "hello world"}' -H "Content-Type: application/json" http://localhost:8080/api/chat/
+@router.post("/", response_model=EmailMessageSchema)
 def chat_create_message(
     payload: ChatMessagePayload,
     session: Session = Depends(get_session)
@@ -31,7 +35,30 @@ def chat_create_message(
     obj = ChatMessage.model_validate(data)
     session.add(obj)
     session.commit()
-    session.refresh(obj)
+    response = generate_email_message(payload.message)
+    return response
 
-
-    return obj 
+@router.post("/supervisor/", response_model=SupervisorMessageSchema)
+def chat_create_supervisor_message(
+    payload: ChatMessagePayload,
+    session: Session = Depends(get_session)
+):
+    data = payload.model_dump()
+    print(data)
+    obj = ChatMessage.model_validate(data)
+    session.add(obj)
+    session.commit()
+    supe = get_supervisor()
+    msg_data = {
+        "messages": [
+            {"role": "user", 
+            "content": f"{payload.message}"
+            },
+        ]
+    }
+    response = supe.invoke(msg_data)
+    if not response:
+        raise HTTPException(status_code=500, detail="No response from supervisor")
+    if not messages:
+        raise HTTPException(status_code=500, detail="No response from supervisor")
+    return messages[-1]
