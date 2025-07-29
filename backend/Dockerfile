@@ -9,6 +9,8 @@ RUN python -m venv /opt/venv
 ENV PATH=/opt/venv/bin:$PATH  
 #adds the virtual environment to the path
 
+ENV PYTHONPATH=/app/src:$PYTHONPATH
+
 WORKDIR /app
 
 # COPY local_folder/file_name destination_folder/file_name
